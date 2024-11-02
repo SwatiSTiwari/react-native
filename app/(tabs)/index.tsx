@@ -1,9 +1,16 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet ,Image} from 'react-native';
+import { Text, View } from '@/components/Themed';
+
+import products from '@/assets/data/products';
+const product=products[0];
 
 export default function TabOneScreen() {
   return (
-    <View>
-      <Text>hello from swati </Text>
+    <View style={styles.container}>
+
+      <Image style={styles.image} source={{uri:product.image}}/>
+      <Text style={styles.title}>{product.name}</Text>
+      <Text style={styles.color}>${product.price}</Text>
     </View>
    
   );
@@ -11,17 +18,22 @@ export default function TabOneScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor:"pink",
+    borderRadius:30,
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+    marginBottom:10,
+    
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  image:{
+    width:"100%",
+    aspectRatio:1,
   },
+  
+  color:{
+    color:'red',
+    marginBottom:40,
+  }
 });
