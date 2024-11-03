@@ -1,5 +1,7 @@
 import { StyleSheet ,Image} from 'react-native';
 import { Text, View } from '@/components/Themed';
+import { Link } from 'expo-router';
+import { Pressable } from 'react-native';
 
 import { Product } from '@/types';
 
@@ -17,12 +19,17 @@ const  defaultImage="https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/ma
 
 export default function ProductListItem({product}:ProductListItemProps) {
   return (
-    <View style={styles.container}>
+    <Link href={`/menu/${product.id}`} asChild>
+    
+    <Pressable style={styles.container}>
 
-      <Image style={styles.image} source={{uri:product.image || defaultImage}}/>
-      <Text style={styles.title}>{product.name}</Text>
-      <Text style={styles.color}>${product.price}</Text>
-    </View>
+<Image style={styles.image} source={{uri:product.image || defaultImage}} />
+<Text style={styles.title}>{product.name}</Text>
+<Text style={styles.color}>${product.price}</Text>
+</Pressable>
+    
+    </Link>
+    
    
   );
 }
@@ -30,7 +37,10 @@ export default function ProductListItem({product}:ProductListItemProps) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor:"pink",
-    borderRadius:30,
+    borderRadius:20,
+    padding:10,
+    flex:1,
+    maxWidth:"50%",
   },
   title: {
     fontSize: 20,
