@@ -12,7 +12,7 @@ type ProductListItemProps={
     product:Product;
 }
 
-const  defaultImage="https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/margarita.png"
+const  defaultPizzImage="https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/margarita.png"
 
 
 
@@ -23,7 +23,7 @@ export default function ProductListItem({product}:ProductListItemProps) {
     
     <Pressable style={styles.container}>
 
-<Image style={styles.image} source={{uri:product.image || defaultImage}} />
+<Image style={styles.image} source={{uri:product.image || defaultPizzImage}} />
 <Text style={styles.title}>{product.name}</Text>
 <Text style={styles.color}>${product.price}</Text>
 </Pressable>
