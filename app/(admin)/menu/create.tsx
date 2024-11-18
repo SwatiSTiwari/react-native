@@ -1,15 +1,17 @@
-import { StyleSheet, Text, View ,TextInput,Image } from 'react-native'
+import { StyleSheet, Text, View ,TextInput,Image, Alert } from 'react-native'
 import React from 'react'
 import { useState } from 'react';
 import Button from "../../../components/Button"
 import * as ImagePicker from 'expo-image-picker';
-import { Stack } from 'expo-router';
+import { Stack,useLocalSearchParams } from 'expo-router';
 
 
 
 const  defaultPizzImage="https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/margarita.png"
 
 const CreateProductScreen = () => {
+    const { id } = useLocalSearchParams();
+    const isUpdatinng = !!id;
 
 
     const [name, setName] = useState('');
@@ -55,6 +57,26 @@ const CreateProductScreen = () => {
        
     }
 
+    const onUpdateCreate = () => {
+
+        if(!validForm()){
+            return false
+        }
+        console.warn("updating product", name, price);    
+        resetFields();
+
+       
+    }
+
+    const onDelete=()=>{
+        
+        if(!validForm()){
+            return false
+        }
+        console.warn("creating product", name, price);    
+        resetFields();
+    }
+
     const pickImage = async () => {
         // No permissions request is necessary for launching the image library
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -72,13 +94,37 @@ const CreateProductScreen = () => {
       };
 
 
-    
+      const onSubmit=()=>{
+        if(isUpdatinng){
+            onUpdateCreate();
+
+        }
+        else{
+            onCreate();
+        }
+      }
+
+      
+    const confirmDelete = () => {
+        console.log("delete button is clucked")
+        Alert.alert("confirm","are you sure you want to  delete  the product?",[
+            {
+                text:"cancel",
+            },
+            {
+                text:"delete",
+                onPress:onDelete,
+                style:"destructive"
+
+            },
+        ])
+    }
 
     
   return (
     
     <View style={styles.container}>
-        <Stack.Screen  options={{title:"create prodcut"}}/>
+        <Stack.Screen  options={{title: isUpdatinng?"create product ":"create prodcut"}}/>
         <Image source={{uri:image||defaultPizzImage}} style={styles.image}
         
         />
@@ -99,7 +145,8 @@ const CreateProductScreen = () => {
          />
             <Text style={{color:"red"}}>{error}</Text>
 
-        <Button onPress={onCreate} text="Create" />
+        <Button onPress={onSubmit} text={ isUpdatinng? "update":"Create"} />
+        {isUpdatinng && <Text onPress={confirmDelete} style={styles.text}>Delete</Text>}
     </View>
   )
 }
@@ -142,6 +189,7 @@ const styles = StyleSheet.create({
     text:{
         fontSize:20,
         alignSelf:"center",
+        color:"blue"
 
     }
 
