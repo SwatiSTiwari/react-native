@@ -4,6 +4,7 @@
     "slug": "FoodOrdering",
     "version": "1.0.0",
     "orientation": "portrait",
+    "newArchEnabled":false,
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",

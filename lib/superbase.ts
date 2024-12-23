@@ -1,27 +1,29 @@
-import 'react-native-url-polyfill/auto';
-import * as SecureStore from 'expo-secure-store';
-import { createClient } from '@supabase/supabase-js';
+import { AppState } from 'react-native'
+import 'react-native-url-polyfill/auto'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { createClient } from '@supabase/supabase-js'
 
-const ExpoSecureStoreAdapter = {
-  getItem: (key: string) => {
-    return SecureStore.getItemAsync(key);
-  },
-  setItem: (key: string, value: string) => {
-    SecureStore.setItemAsync(key, value);
-  },
-  removeItem: (key: string) => {
-    SecureStore.deleteItemAsync(key);
-  },
-};
-
-const supabaseUrl = 'https://dbcagarldjelyeolkezh.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiY2FnYXJsZGplbHllb2xrZXpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI3MjMyOTIsImV4cCI6MjA0ODI5OTI5Mn0.2Kn6CROPNg525VIpXp_MPAJnaX4XaI9H0XZhMny8zCc';
+const supabaseUrl = "https://sdcrbxhslayhayrykdaa.supabase.co"
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkY3JieGhzbGF5aGF5cnlrZGFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ4NjA2NDUsImV4cCI6MjA1MDQzNjY0NX0.wBCv5xstwEBF9goYdhbhFknQhBNRNdH-my0EPINesZI"
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: ExpoSecureStoreAdapter as any,
+    storage: AsyncStorage,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
   },
-});
+})
+
+// Tells Supabase Auth to continuously refresh the session automatically
+// if the app is in the foreground. When this is added, you will continue
+// to receive `onAuthStateChange` events with the `TOKEN_REFRESHED` or
+// `SIGNED_OUT` event if the user's session is terminated. This should
+// only be registered once.
+AppState.addEventListener('change', (state) => {
+  if (state === 'active') {
+    supabase.auth.startAutoRefresh()
+  } else {
+    supabase.auth.stopAutoRefresh()
+  }
+})
