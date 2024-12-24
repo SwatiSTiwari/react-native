@@ -12,52 +12,94 @@ import { Session } from "@supabase/supabase-js";
 type AuthData = {
   session: Session | null;
   loading: boolean;
+  profile: Profile | null;
+  isAdmin: boolean;
+};
+
+// Define the Profile type
+type Profile = {
+  id: string;
+  group: string; // For example, "ADMIN" or "USER"
+  // Add other profile fields as needed
 };
 
 // Create the AuthContext with default values
 const AuthContext = createContext<AuthData>({
   session: null,
   loading: true,
+  profile: null,
+  isAdmin: false,
 });
 
+// AuthProvider component
 export default function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
-    const fetchSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session); // Correctly access `data.session`
-      setLoading(false);
+    const initializeAuth = async () => {
+      try {
+        // Fetch the current session
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+
+        // If there's a session, fetch the user's profile
+        if (session) {
+          await fetchProfile(session.user.id);
+        }
+      } catch (error) {
+        console.error("Error initializing authentication:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchSession();
+    const fetchProfile = async (userId: string) => {
+      try {
+        // Fetch the profile from the database
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
 
+        if (error) {
+          console.error("Error fetching profile:", error);
+          setProfile(null);
+        } else {
+          setProfile(data);
+        }
+      } catch (error) {
+        console.error("Unexpected error fetching profile:", error);
+        setProfile(null);
+      }
+    };
+
+    initializeAuth();
+
+    // Subscribe to auth state changes
     const { data: subscription } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
+      async (_event, newSession) => {
         setSession(newSession);
+
+        if (newSession) {
+          await fetchProfile(newSession.user.id);
+        } else {
+          setProfile(null); // Clear profile on logout
+        }
       }
     );
 
-    if (session) {
-      // fetch profile
-      const { data } = supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
-      setProfile(data || null);
-    }
-
-    // Cleanup subscription on component unmount
-    return () => {
-      subscription?.unsubscribe();
-    };
+    // Cleanup subscription on unmount
+    return () => subscription?.unsubscribe();
   }, []);
 
+  // Derived state for isAdmin
+  const isAdmin = profile?.group === "ADMIN";
+
   return (
-    <AuthContext.Provider value={{ session, loading }}>
+    <AuthContext.Provider value={{ session, loading, profile, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
