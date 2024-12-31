@@ -6,11 +6,14 @@ import { Pressable } from 'react-native';
 import { Product } from '@/types';
 
 import products from '@/assets/data/products';
+import { Tables } from '@/database.types';
 const product=products[0];
 
-type ProductListItemProps={
-    product:Product;
-}
+
+
+type ProductListItemProps = {
+  product: Tables<'product'>;
+};
 
 const  defaultPizzImage="https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/margarita.png"
 

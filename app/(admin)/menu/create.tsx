@@ -4,22 +4,37 @@ import { useState } from 'react';
 import Button from "../../../components/Button"
 import * as ImagePicker from 'expo-image-picker';
 import { Stack,useLocalSearchParams } from 'expo-router';
+import { useDeleteProduct, useInsertProduct } from '@/api/product';
+import { router } from 'expo-router';
+import { useProduct } from '@/api/product';
+import { useUpdateProduct } from '@/api/product';
 
 
 
 const  defaultPizzImage="https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/margarita.png"
 
 const CreateProductScreen = () => {
-    const { id } = useLocalSearchParams();
-    const isUpdatinng = !!id;
-
 
     const [name, setName] = useState('');
     const [price, setPrice] = useState('');
-    const [error,setError] = useState('');
+    const [error, setError] = useState('');
     const [image, setImage] = useState<string | null>(null);
 
+    
+  const { id: idString } = useLocalSearchParams();
+  const id = parseFloat(
+    typeof idString === 'string' ? idString : idString?.[0]
+  );
+  const isUpdating = !!idString;
 
+  const { mutate: insertProduct } = useInsertProduct();
+  const { mutate: updateProduct } = useUpdateProduct();
+  const { data: updatingProduct } = useProduct(id);
+  const { mutate: deleteProduct } = useDeleteProduct();
+
+
+
+    
 
 
 
@@ -48,6 +63,13 @@ const CreateProductScreen = () => {
 
     const onCreate = () => {
 
+        insertProduct({name, price:parseFloat(price), image},{
+            onSuccess:()=>{
+                resetFields();
+                router.back();
+            }
+        });
+
         if(!validForm()){
             return false
         }
@@ -57,11 +79,24 @@ const CreateProductScreen = () => {
        
     }
 
-    const onUpdateCreate = () => {
+    const onUpdateCreate =async () => {
 
         if(!validForm()){
             return false
         }
+
+
+        
+
+        updateProduct(
+          { id, name, price: parseFloat(price), image },
+          {
+            onSuccess: () => {
+              resetFields();
+              router.back();
+            },
+          }
+        );
         console.warn("updating product", name, price);    
         resetFields();
 
@@ -73,6 +108,14 @@ const CreateProductScreen = () => {
         if(!validForm()){
             return false
         }
+
+        deleteProduct(id, {
+            onSuccess: () => {
+              resetFields();
+              router.replace('/(admin)');
+            },
+          });
+
         console.warn("creating product", name, price);    
         resetFields();
     }
@@ -93,9 +136,11 @@ const CreateProductScreen = () => {
         }
       };
 
+      
+
 
       const onSubmit=()=>{
-        if(isUpdatinng){
+        if(isUpdating){
             onUpdateCreate();
 
         }
@@ -120,11 +165,14 @@ const CreateProductScreen = () => {
         ])
     }
 
+
+
+    
     
   return (
     
     <View style={styles.container}>
-        <Stack.Screen  options={{title: isUpdatinng?"create product ":"create prodcut"}}/>
+        <Stack.Screen  options={{title: isUpdating?"create product ":"create prodcut"}}/>
         <Image source={{uri:image||defaultPizzImage}} style={styles.image}
         
         />
@@ -145,8 +193,8 @@ const CreateProductScreen = () => {
          />
             <Text style={{color:"red"}}>{error}</Text>
 
-        <Button onPress={onSubmit} text={ isUpdatinng? "update":"Create"} />
-        {isUpdatinng && <Text onPress={confirmDelete} style={styles.text}>Delete</Text>}
+        <Button onPress={onSubmit} text={ isUpdating? "update":"Create"} />
+        {isUpdating && <Text onPress={confirmDelete} style={styles.text}>Delete</Text>}
     </View>
   )
 }

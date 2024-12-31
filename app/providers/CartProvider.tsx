@@ -47,7 +47,12 @@
 import { createContext, PropsWithChildren, useContext, useState } from "react";
 import { Product, CartItem,PizzaSize } from '@/types';
 
+
 import {randomUUID} from 'expo-crypto'
+import { Tables } from "@/database.types";
+
+
+type Product=Tables<'product'>;
 type CartType = {
     items: CartItem[],
     addItem: (product: Product, size: CartItem["size"]) => void;

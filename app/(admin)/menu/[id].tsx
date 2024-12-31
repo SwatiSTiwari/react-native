@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, Pressable } from 'react-native';
+import { StyleSheet,ActivityIndicator, Text, View, Image, Pressable } from 'react-native';
 import React, { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Stack } from 'expo-router';
@@ -9,6 +9,7 @@ import { useCart } from '@/app/providers/CartProvider';
 import { Link } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
+import { useProduct } from '@/api/product';
 
 
 const Sizes: PizzaSize[] = ["S", "M", "L", "XL"];
@@ -20,8 +21,18 @@ const Product = () => {  // Capitalized component name
 
   const [selected, setSelected] = useState<PizzaSize>('M');
 
-  const product = products.find((p) => p.id.toString() === id);
+  const {
+    data: product,
+    isLoading,
+    error,
+  } = useProduct(parseInt(typeof id === 'string' ? id : id[0]));
   
+  if (isLoading) {
+    return <ActivityIndicator />;
+  }
+  if (error || !product) {
+    return <Text>Failed to fetch product</Text>;
+  }  
   const addToCart = () => {
     if (!product) {
       return;
